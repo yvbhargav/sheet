@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Private Games Dashboard</title>
+<style>
+    body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; }
+    header { background: #2c3e50; color: #fff; padding: 20px; text-align: center; }
+    .container { padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #34495e; color: #fff; cursor: pointer; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    .search-box { margin-bottom: 15px; }
+    .search-box input { padding: 8px; width: 250px; }
+</style>
+</head>
+<body>
+<header>
+<h1>Private Games Dashboard</h1>
+</header>
+<div class="container">
+<div class="search-box">
+<input type="text" id="searchInput" placeholder="Search games..." onkeyup="filterGames()">
+</div>
+<table id="gamesTable">
+<thead>
+<tr>
+<th onclick="sortTable(0)">Game</th>
+<th onclick="sortTable(1)">Size (GB)</th>
+<th onclick="sortTable(2)">Complexity</th>
+<th onclick="sortTable(3)">Platform</th>
+<th onclick="sortTable(4)">Account</th>
+<th onclick="sortTable(5)">DirectX</th>
+<th onclick="sortTable(6)">Controller</th>
+<th onclick="sortTable(7)">Multiplayer</th>
+</tr>
+</thead>
+<tbody>
+<!-- Games will be loaded here -->
+</tbody>
+</table>
+</div>
+<script>
+    let gamesData = [];
+    // Load the JSON data
+    fetch('games_dashboard_data.json')
+      .then(response => response.json())
+      .then(data => {
+        gamesData = data;
+        renderTable(gamesData);
+      });
+ 
+    function renderTable(data) {
+      const tbody = document.querySelector('#gamesTable tbody');
+      tbody.innerHTML = '';
+      data.forEach(game => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+<td>${game.Games}</td>
+<td>${game.Size}</td>
+<td>${game.Complexity}</td>
+<td>${game.Dependency}</td>
+<td>${game.Accounts}</td>
+<td>${game.DirectX}</td>
+<td>${game.Controller}</td>
+<td>${game.Multiplayer}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+ 
+    function filterGames() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = gamesData.filter(game =>
+        (game.Games && game.Games.toLowerCase().includes(query)) ||
+        (game.Complexity && game.Complexity.toLowerCase().includes(query)) ||
+        (game.Dependency && game.Dependency.toLowerCase().includes(query))
+      );
+      renderTable(filtered);
+    }
+ 
+    // Simple table sorting
+    function sortTable(n) {
+      const table = document.getElementById("gamesTable");
+      let switching = true, dir = "asc", switchcount = 0;
+      while (switching) {
+        switching = false;
+        let rows = table.rows, shouldSwitch;
+        for (let i = 1; i < (rows.length - 1); i++) {
+          shouldSwitch = false;
+          let x = rows[i].getElementsByTagName("TD")[n];
+          let y = rows[i + 1].getElementsByTagName("TD")[n];
+          if (dir === "asc") {
+            if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }
+          } else if (dir === "desc") {
+            if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }
+          }
+        }
+        if (shouldSwitch) {
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+          switchcount++;
+        } else {
+          if (switchcount === 0 && dir === "asc") {
+            dir = "desc";
+            switching = true;
+          }
+        }
+      }
+    }
+</script>
+</body>
+</html>
